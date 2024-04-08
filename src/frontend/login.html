@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="styles/login.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("login").addEventListener("submit", (event) => {
+                event.preventDefault()
+                let username = document.getElementById("username").value;
+                let password = document.getElementById("password").value;
+                fetch('/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        'username': username,
+                        'password': password,
+                    })
+
+                })
+                .then(response => {
+                    if(response.status == 200){
+                        return response.json()
+                    }else {
+                        throw 'Nie poprawne hasło lub login';
+                    }
+                })
+                .then(data => {
+                    localStorage.setItem("token", data.access_token)
+                    location.href = "/index.html"
+                })
+                .catch(error => document.getElementById("error-display").innerHTML = error);
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        <form id="login">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" value="Login">
+        </form>
+        <p class="error" id="error-display"></p>
+    </div>
+</body>
+</html>

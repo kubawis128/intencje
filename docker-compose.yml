@@ -1,0 +1,14 @@
+version: '3'
+services:
+  db1:
+    image: mariadb:latest
+    container_name: mariadb5
+    environment:
+      MARIADB_ROOT_PASSWORD: dupa
+  phpmyadmin:
+      image: phpmyadmin:latest
+      container_name: phpmyadmin3
+      environment:
+        PMA_ARBITRARY: 1
+      ports:
+        - "6969:80"

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles/index.css">
+    <script src="syf.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            fetch('/status/', {
+                    headers: {
+                        'accept': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem("token")
+                    }
+                }).then(response => {
+                    if(response.status == 401){
+                        throw 'Nie poprawne hasło lub login';
+                    }
+                })
+                .then(data => console.log("User is logged in"))
+                .catch(error => {
+                    localStorage.setItem("token", null)
+                    location.href = "/login.html"
+                });
+
+            let parafie
+            let tmp_pogrzeb_id
+            /* Get parafie and add them to options and a table */
+            fetch('/api/parafie/get', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem("token")
+                    }})
+                .then(response => response.json())
+                .then(data => parafie = data)
+                .then(() => {
+                    let selectElement = document.getElementsByClassName("parafia-select");
+                    let tabelka = document.getElementById("tabelka-parfie");
+
+                    parafie.forEach(parafia => {
+                        Array.from(selectElement).forEach(select => {
+                            var optionElement = document.createElement("option");
+                            optionElement.value = parafia.id;
+                            optionElement.textContent = parafia.nazwa;
+                            select.appendChild(optionElement);
+                        })
+
+                        const row = tabelka.insertRow();
+
+                        row.insertCell(0).innerHTML = parafia.nazwa;
+                        var button = document.createElement("button");
+
+                        button.textContent = "Usuń";
+
+                        button.addEventListener("click", () => {
+                            fetch('/api/parafie/remove?id=' + parafia.id, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + localStorage.getItem("token")
+                                },
+                            })
+                            .then(response => response.json())
+                            .then(data => location.reload(true))
+                            .catch(error => console.error(error));
+                        })
+                        row.insertCell(1).appendChild(button)
+                    })
+                    
+                    fetch('/api/pogrzeby/get', {
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem("token")
+                        }})
+                        .then(response => response.json())
+                        .then(data => {
+                            let table = document.getElementById("pogrzeby");
+                                data.forEach(pogrzeb => {
+                                    let row = table.insertRow();
+
+                                    let date = new Date(pogrzeb.date);
+                                    let formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+                                    let nazwa_parafi = parafie.find((a) => a.id == pogrzeb.parafia_id);
+
+                                    row.insertCell(0).innerHTML = pogrzeb.imie;
+                                    row.insertCell(1).innerHTML = pogrzeb.nazwisko;
+                                    row.insertCell(2).innerHTML = formattedDate;
+                                    row.insertCell(3).innerHTML = nazwa_parafi ? nazwa_parafi.nazwa : "usunięta";
+
+                                    let button = document.createElement("button");
+                                    button.textContent = "Intencje";
+                                    button.addEventListener("click", () => {
+                                        document.getElementById("intencje-pop").classList.toggle("hidden")
+                                        update_intencje(pogrzeb.id)
+                                    })
+                                    row.insertCell(4).appendChild(button)
+
+
+                                    let edit = document.createElement("button");
+                                    edit.textContent = "Edytuj";
+                                    edit.addEventListener("click", () => {
+                                        document.getElementById("pogrzeb-edit-pop").classList.toggle("hidden")
+                                        document.getElementById("id_pogrzebu").value = pogrzeb.id
+                                    })
+
+                                    let del = document.createElement("button");
+                                    del.textContent = "Usuń";
+                                    del.addEventListener("click", () => {
+                                        fetch('/api/pogrzeby/remove?id=' + pogrzeb.id, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Authorization': 'Bearer ' + localStorage.getItem("token")
+                                            },
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => location.reload(true))
+                                        .catch(error => console.error(error));
+                                    })
+                                    let row1 = row.insertCell(5)
+                                    row1.appendChild(del)
+                                    row1.appendChild(edit)
+                                });
+                        })
+                    });
+            
+            setup_add_pogrzeb()
+            setup_edit_pogrzeb()
+            setup_add_parafia()
+            setup_add_intencje()
+            setup_popUps()
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <table id="pogrzeby">
+            <thead>
+                <tr>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Data</th>
+                    <th>Parafia</th>
+                    <th>Intencje</th>
+                    <th>Opcje</th>
+                </tr>
+            </thead>
+        </table>
+        <br><hr>
+        <button id="pogrzeb-add">Dodaj Pogrzeb</button>
+        <button id="parafia-add">Edytuj Parafie</button>
+    </div>
+
+    <!-- Add pogrzeb -->
+    <div id="pogrzeb-pop" class="hidden pop-up">
+        <div class="container">
+            <form id="pogrzeb">
+                <div class="helper">
+                    <label for="imie">Imię: </label><input type="text" name="imie" id="imie" required>
+                    <br>
+                    <label for="nazwisko">Nazwisko: </label><input type="text" name="nazwisko" id="nazwisko" required>
+                    <br><br>
+                    <label for="date">Data: </label><input type="date" name="date" id="date" required>
+                    <br><br>
+                    <label for="parafia-select">Parafia: </label>
+                    <select name="parafia" id="parafia-select" class="parafia-select">
+                    </select>
+                    <br>
+                </div>
+                <br>
+                <input type="submit" value="Dodaj Pogrzeb">
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Delete parafie -->
+    <div id="parafie-pop" class="hidden pop-up">
+        <div class="container">
+            <table id="tabelka-parfie">
+                <thead>
+                    <tr>
+                        <th>Nazwa</th>
+                        <th>Opcje</th>
+                    </tr>
+                </thead>
+            </table>
+            <hr>
+            <form id="parafia">
+                <label for="nazwa">Nazwa parafi: </label><input type="text" name="nazwa" id="nazwa" required>
+                <input type="submit" value="Dodaj Parafie">
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit pogrzeb -->
+    <div id="pogrzeb-edit-pop" class="hidden pop-up">
+        <div class="container">
+            <form id="pogrzeb-edit">
+                <div class="helper">
+                    <label for="imie">Imię: </label><input type="text" name="imie" id="imie" required>
+                    <br>
+                    <label for="nazwisko">Nazwisko: </label><input type="text" name="nazwisko" id="nazwisko" required>
+                    <br><br>
+                    <label for="date">Data: </label><input type="date" name="date" id="date" required>
+                    <br><br>
+                    <label for="parafia-select">Parafia: </label>
+                    <select name="parafia" id="parafia-select" class="parafia-select">
+                    </select>
+                    <br>
+                    <input type="hidden" id="id_pogrzebu">
+                </div>
+                <br>
+                <input type="submit" value="Edytuj Pogrzeb">
+            </form>
+        </div>
+    </div>
+
+    <!-- Intencje -->
+    <div id="intencje-pop" class="hidden pop-up">
+        <div class="container">
+            <table id="intencje">
+                <thead>
+                    <tr>
+                        <th>Od Kogo</th>
+                        <th>Kwota</th>
+                        <th>Opcje</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+
+                </tbody>
+            </table>
+            <br><hr>
+            <button id="intencja-add">Dodaj Intencje</button>
+        </div>
+    </div>
+
+    <!-- Add Intencje -->
+    <div id="intencja-add-pop" class="hidden pop-up">
+        <div class="container">
+            <form id="intencja-add-form">
+                <label for="od_kogo">Od Kogo: </label><br><input type="text" name="od_kogo" id="od_kogo" required>
+                <br>
+                <label for="kwota">Kwota: </label><br><input type="number" min="1" name="kwota" id="kwota" required>
+                <input type="hidden" id="id_pogrzebu">
+                <br>
+                <br>
+                <input type="submit" value="Edytuj Pogrzeb">
+            </form>
+        </div>
+    </div>
+</body>
+</html>
