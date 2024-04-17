@@ -33,13 +33,20 @@ class ParafieDB(Database):
     def remove(self, id: int):
         self.mycursor.execute("DELETE FROM Parafie WHERE id = %s", (id,))
 
+    def getById(self, id: int):
+        if self.contains_id(id=id):
+            self.mycursor.execute("SELECT id,nazwa FROM Parafie WHERE id = %s", (id,))
+            res = self.mycursor.fetchone()
+            return Parafia(id=res[0],nazwa=res[1])
+        else:
+            None
     def contains_id(self, id: int):
         self.mycursor.execute("SELECT * FROM Parafie WHERE id = %s", (id,))
         return self.mycursor.fetchone() is not None
 
 class PogrzebyDB(Database):
     def get_all(self) -> list[Pogrzeb]:
-        self.mycursor.execute("SELECT id,imię,nazwisko,data,parafia_id FROM Pogrzeby")
+        self.mycursor.execute("SELECT id,imię,nazwisko,data,data_mszy,parafia_id FROM Pogrzeby")
         db_output = self.mycursor.fetchall()
         output = []
         for row in db_output:
@@ -48,7 +55,8 @@ class PogrzebyDB(Database):
                     imie=row[1],
                     nazwisko=row[2],
                     date=row[3],
-                    parafia_id=row[4]
+                    date_mszy=row[4],
+                    parafia_id=row[5]
                 )
             )
         return output
@@ -56,11 +64,11 @@ class PogrzebyDB(Database):
     def add(self, data: Pogrzeb):
         parafiaDB = ParafieDB()
         if parafiaDB.contains_id(data.parafia_id):
-            self.mycursor.execute("INSERT INTO Pogrzeby (imię,nazwisko,data,parafia_id) VALUES (%s,%s,%s,%s)", (data.imie,data.nazwisko,data.date,data.parafia_id))
+            self.mycursor.execute("INSERT INTO Pogrzeby (imię,nazwisko,data,data_mszy,parafia_id) VALUES (%s,%s,%s,%s,%s)", (data.imie,data.nazwisko,data.date,data.date_mszy,data.parafia_id))
 
     def update(self, data: Pogrzeb):
         if self.contains_id(data.id):
-            self.mycursor.execute("UPDATE Pogrzeby SET imię = %s, nazwisko = %s, data = %s, parafia_id = %s WHERE id = %s", (data.imie,data.nazwisko,data.date,data.parafia_id,data.id))
+            self.mycursor.execute("UPDATE Pogrzeby SET imię = %s, nazwisko = %s, data = %s, data_mszy = %s, parafia_id = %s WHERE id = %s", (data.imie,data.nazwisko,data.date,data.date_mszy,data.parafia_id,data.id))
     
     def remove(self, id: int):
         self.mycursor.execute("DELETE FROM Pogrzeby WHERE id = %s", (id,))

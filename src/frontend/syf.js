@@ -48,11 +48,24 @@ function setup_add_pogrzeb() {
         var imie = form.querySelector("#imie").value;
         var nazwisko = form.querySelector("#nazwisko").value;
         var data = form.querySelector("#date").value;
+        var data_mszy = form.querySelector("#date-mszy").value;
         var parafia = parseInt(form.querySelector("#parafia-select").value);
 
         if (new Date() > new Date(data)) {
             alert("Data pogrzebu musi być w przyszłości")
             return
+        }
+
+        let body = {
+            id: 0,
+            imie: imie,
+            nazwisko: nazwisko,
+            date: data,
+            parafia_id: parafia
+        }
+
+        if(data_mszy){
+            body.date_mszy = data_mszy
         }
 
         fetch('/api/pogrzeby/insert', {
@@ -61,13 +74,8 @@ function setup_add_pogrzeb() {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + localStorage.getItem("token")
             },
-            body: JSON.stringify({
-                id: 0,
-                imie: imie,
-                nazwisko: nazwisko,
-                date: data,
-                parafia_id: parafia
-            })
+            
+            body: JSON.stringify(body)
         })
             .then(response => response.json())
             .then(data => location.reload(true))
@@ -83,10 +91,24 @@ function setup_edit_pogrzeb() {
         var imie = form.querySelector("#imie").value;
         var nazwisko = form.querySelector("#nazwisko").value;
         var data = form.querySelector("#date").value;
+        var data_mszy = form.querySelector("#date-mszy").value;
         var parafia = parseInt(form.querySelector("#parafia-select").value);
+
         if (new Date() > new Date(data)) {
             alert("Data pogrzebu musi być w przyszłości")
             return
+        }
+
+        let body = {
+            id: id,
+            imie: imie,
+            nazwisko: nazwisko,
+            date: data,
+            parafia_id: parafia
+        }
+
+        if(data_mszy){
+            body.date_mszy = data_mszy
         }
 
         fetch('/api/pogrzeby/update', {
@@ -95,13 +117,7 @@ function setup_edit_pogrzeb() {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + localStorage.getItem("token")
             },
-            body: JSON.stringify({
-                id: id,
-                imie: imie,
-                nazwisko: nazwisko,
-                date: data,
-                parafia_id: parafia
-            })
+            body: JSON.stringify(body)
         })
             .then(response => response.json())
             .then(data => location.reload(true))
@@ -116,8 +132,8 @@ function update_intencje(id) {
         }})
         .then(response => response.json())
         .then(data => {
-            let table = document.getElementById("intencje-pop").querySelector("#intencje")
-            table.querySelector("#tbody").innerHTML = ""
+            let table = document.getElementById("intencje-pop").querySelector("#intencje").querySelector("#tbody")
+            table.innerHTML = ""
             data.forEach(intencja => {
                 let row = table.insertRow();
 
@@ -177,3 +193,35 @@ function setup_add_intencje() {
             .catch(error => console.error(error));
     });
 }
+
+function download(filename, text) {
+    
+}
+
+function setup_add_download() {
+    var download = document.getElementById("download");
+    download.addEventListener("click", event => {
+        fetch('/api/pogrzeby/download?show=true', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem("token")
+            }
+        })
+            .then(response => response.text())
+            .then(data => {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:application/pdf;base64,' + data);
+                element.setAttribute('download', "pogrzeby.pdf");
+              
+                element.style.display = 'none';
+                document.body.appendChild(element);
+              
+                element.click();
+              
+                document.body.removeChild(element);
+            })
+            .catch(error => console.error(error));
+    });
+}
+

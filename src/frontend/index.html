@@ -81,11 +81,21 @@
                                     let date = new Date(pogrzeb.date);
                                     let formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
                                     let nazwa_parafi = parafie.find((a) => a.id == pogrzeb.parafia_id);
-
+                                    let formattedDate2
+                                    if(pogrzeb.date_mszy != null){
+                                        console.log(pogrzeb)
+                                        let date2 = new Date(pogrzeb.date_mszy);
+                                        const formatter = new Intl.DateTimeFormat('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                        formattedDate2 = formatter.format(date2);
+                                    }else {
+                                        formattedDate2 = "Brak" 
+                                    }
+                                    
                                     row.insertCell(0).innerHTML = pogrzeb.imie;
                                     row.insertCell(1).innerHTML = pogrzeb.nazwisko;
                                     row.insertCell(2).innerHTML = formattedDate;
-                                    row.insertCell(3).innerHTML = nazwa_parafi ? nazwa_parafi.nazwa : "usunięta";
+                                    row.insertCell(3).innerHTML = formattedDate2;
+                                    row.insertCell(4).innerHTML = nazwa_parafi ? nazwa_parafi.nazwa : "usunięta";
 
                                     let button = document.createElement("button");
                                     button.textContent = "Intencje";
@@ -93,7 +103,7 @@
                                         document.getElementById("intencje-pop").classList.toggle("hidden")
                                         update_intencje(pogrzeb.id)
                                     })
-                                    row.insertCell(4).appendChild(button)
+                                    row.insertCell(5).appendChild(button)
 
 
                                     let edit = document.createElement("button");
@@ -117,7 +127,7 @@
                                         .then(data => location.reload(true))
                                         .catch(error => console.error(error));
                                     })
-                                    let row1 = row.insertCell(5)
+                                    let row1 = row.insertCell(6)
                                     row1.appendChild(del)
                                     row1.appendChild(edit)
                                 });
@@ -129,6 +139,7 @@
             setup_add_parafia()
             setup_add_intencje()
             setup_popUps()
+            setup_add_download()
         });
     </script>
 </head>
@@ -140,6 +151,7 @@
                     <th>Imię</th>
                     <th>Nazwisko</th>
                     <th>Data</th>
+                    <th>Data Mszy</th>
                     <th>Parafia</th>
                     <th>Intencje</th>
                     <th>Opcje</th>
@@ -149,6 +161,7 @@
         <br><hr>
         <button id="pogrzeb-add">Dodaj Pogrzeb</button>
         <button id="parafia-add">Edytuj Parafie</button>
+        <button id="download">Drukuj</button>
     </div>
 
     <!-- Add pogrzeb -->
@@ -156,11 +169,13 @@
         <div class="container">
             <form id="pogrzeb">
                 <div class="helper">
-                    <label for="imie">Imię: </label><input type="text" name="imie" id="imie" required>
+                    <label for="imie">Imię: </label><br><input type="text" name="imie" id="imie" required>
                     <br>
-                    <label for="nazwisko">Nazwisko: </label><input type="text" name="nazwisko" id="nazwisko" required>
-                    <br><br>
-                    <label for="date">Data: </label><input type="date" name="date" id="date" required>
+                    <label for="nazwisko">Nazwisko: </label><br><input type="text" name="nazwisko" id="nazwisko" required>
+                    <br>
+                    <label for="date">Data: </label><br><input type="date" name="date" id="date" required>
+                    <br>
+                    <label for="date-mszy">Data Mszy (opcjonalne): </label><br><input type="datetime-local" name="date-mszy" id="date-mszy">
                     <br><br>
                     <label for="parafia-select">Parafia: </label>
                     <select name="parafia" id="parafia-select" class="parafia-select">
@@ -197,11 +212,13 @@
         <div class="container">
             <form id="pogrzeb-edit">
                 <div class="helper">
-                    <label for="imie">Imię: </label><input type="text" name="imie" id="imie" required>
+                    <label for="imie">Imię: </label><br><input type="text" name="imie" id="imie" required>
                     <br>
-                    <label for="nazwisko">Nazwisko: </label><input type="text" name="nazwisko" id="nazwisko" required>
-                    <br><br>
-                    <label for="date">Data: </label><input type="date" name="date" id="date" required>
+                    <label for="nazwisko">Nazwisko: </label><br><input type="text" name="nazwisko" id="nazwisko" required>
+                    <br>
+                    <label for="date">Data: </label><br><input type="date" name="date" id="date" required>
+                    <br>
+                    <label for="date-mszy">Data Mszy (opcjonalne): </label><br><input type="datetime-local" name="date-mszy" id="date-mszy">
                     <br><br>
                     <label for="parafia-select">Parafia: </label>
                     <select name="parafia" id="parafia-select" class="parafia-select">
@@ -245,7 +262,7 @@
                 <input type="hidden" id="id_pogrzebu">
                 <br>
                 <br>
-                <input type="submit" value="Edytuj Pogrzeb">
+                <input type="submit" value="Dodaj Intencje">
             </form>
         </div>
     </div>

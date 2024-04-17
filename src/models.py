@@ -29,6 +29,7 @@ class Pogrzeb(BaseModel):
     imie: str
     nazwisko: str
     date: datetime
+    date_mszy: datetime | None = None
     parafia_id: int
 
 class Intencja(BaseModel):
