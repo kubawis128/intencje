@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Intencje Pogrzebowe</title>
     <link rel="stylesheet" href="styles/index.css">
     <script src="syf.js"></script>
     <script>
@@ -26,7 +26,6 @@
                 });
 
             let parafie
-            let tmp_pogrzeb_id
             /* Get parafie and add them to options and a table */
             fetch('/api/parafie/get', {
                     headers: {
@@ -139,7 +138,6 @@
             setup_add_parafia()
             setup_add_intencje()
             setup_popUps()
-            setup_add_download()
         });
     </script>
 </head>
@@ -161,7 +159,6 @@
         <br><hr>
         <button id="pogrzeb-add">Dodaj Pogrzeb</button>
         <button id="parafia-add">Edytuj Parafie</button>
-        <button id="download">Drukuj</button>
     </div>
 
     <!-- Add pogrzeb -->
@@ -248,7 +245,9 @@
                 </tbody>
             </table>
             <br><hr>
-            <button id="intencja-add">Dodaj Intencje</button>
+            <button id="intencja-add">Dodaj Intencje</button><br><br><br>
+            <label for="show">Kwota?</label><br><input type="checkbox" id="show"><br>
+            <button id="download">Drukuj</button>
         </div>
     </div>
 

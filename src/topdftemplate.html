@@ -6,31 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        h1 {
+        @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900');
+        @import url('https://fonts.googleapis.com/css?family=Lato:400,700,900');
+
+        body {
             text-align: center;
+            font-family: 'Lato', sans-serif;
+            font-size: x-large;
+        }   
+
+        h1,h3 {
+            font-family: 'Montserrat', sans-serif;
         }
-        table {
-            width: 100%;
-        }
-        table,tr,td {
-            border: 1px black solid;
-        }
+    
     </style>
 </head>
 
 <body>
-    <h1>Pogrzeby</h1>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Imię Nazwisko</th>
-                    <th>Data</th>
-                    <th>Data Mszy</th>
-                    <th>Parafia</th>
-                </tr>
-            </thead>
-                %here%
-        </table>
+    <h1>Intencje</h1>
+    %wstep%
+    <hr>
+    %table%
 </body>
 
 </html>

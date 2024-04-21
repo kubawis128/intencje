@@ -126,6 +126,7 @@ function setup_edit_pogrzeb() {
 }
 
 function update_intencje(id) {
+    setup_add_download(id)
     fetch('/api/intencje/get_for?id=' + id, {
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem("token")
@@ -194,14 +195,11 @@ function setup_add_intencje() {
     });
 }
 
-function download(filename, text) {
-    
-}
-
-function setup_add_download() {
+function setup_add_download(id) {
     var download = document.getElementById("download");
     download.addEventListener("click", event => {
-        fetch('/api/pogrzeby/download?show=true', {
+        let show = document.getElementById("show").checked
+        fetch(`/api/pogrzeby/download?show=${show}&id=${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -61,6 +61,25 @@ class PogrzebyDB(Database):
             )
         return output
     
+    def getById(self, id: int) -> Pogrzeb:
+        if self.contains_id(id=id):
+            self.mycursor.execute("SELECT id,imię,nazwisko,data,data_mszy,parafia_id FROM Pogrzeby WHERE id = %s", (id,))
+            row = self.mycursor.fetchone()
+            return Pogrzeb(
+                    id=row[0],
+                    imie=row[1],
+                    nazwisko=row[2],
+                    date=row[3],
+                    date_mszy=row[4],
+                    parafia_id=row[5]
+                )
+        else:
+            None
+
+    def contains_id(self, id: int):
+        self.mycursor.execute("SELECT * FROM Pogrzeby WHERE id = %s", (id,))
+        return self.mycursor.fetchone() is not None
+    
     def add(self, data: Pogrzeb):
         parafiaDB = ParafieDB()
         if parafiaDB.contains_id(data.parafia_id):
